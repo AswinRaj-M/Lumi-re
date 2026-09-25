@@ -41,6 +41,16 @@ export default function FeaturedAccordionShowcase({
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<AccordionGalleryItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== "undefined" && window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -84,6 +94,11 @@ export default function FeaturedAccordionShowcase({
   }, []);
 
   const handlePhotoClick = (item: AccordionGalleryItem, index: number) => {
+    // On mobile screens (< 768px), tapping expands the picture in the accordion
+    // (the same action as hovering on desktop) without opening the lightbox preview
+    if (isMobile || (typeof window !== "undefined" && window.innerWidth < 768)) {
+      return;
+    }
     setSelectedPhoto(item);
     setSelectedIndex(index);
   };
@@ -106,8 +121,8 @@ export default function FeaturedAccordionShowcase({
         <AccordionGallery
           items={items}
           defaultIndex={Math.min(2, Math.max(0, items.length - 1))}
-          expandRatio={0.52}
-          trigger="hover"
+          expandRatio={isMobile ? 0.58 : 0.52}
+          trigger={isMobile ? "click" : "hover"}
           accentColor="#ffffff"
           overlayColor="#060010"
           textColor="#ffffff"
@@ -115,12 +130,12 @@ export default function FeaturedAccordionShowcase({
           showLabels
           duration={0.6}
           ease="power3.out"
-          parallax={0.5}
-          tilt={8}
+          parallax={isMobile ? 0.3 : 0.5}
+          tilt={isMobile ? 4 : 8}
           stagger={0.06}
-          height={height}
-          gap={10}
-          radius={16}
+          height={isMobile ? 330 : height}
+          gap={isMobile ? 6 : 10}
+          radius={isMobile ? 12 : 16}
           orientation="horizontal"
           onItemClick={handlePhotoClick}
         />

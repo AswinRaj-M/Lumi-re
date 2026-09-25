@@ -125,6 +125,25 @@ const DriftWall = ({
   const columnItems = useMemo<DriftWallItem[][]>(() => {
     const safeItems = items && items.length > 0 ? items : DEFAULT_ITEMS;
     const actualCols = Math.max(1, Math.min(columns, safeItems.length));
+
+    // For compact screens (mobile / tablet with <= 4 columns),
+    // ensure every column contains the entire collection of photos with distinct rotational offsets.
+    // This ensures all photos in the archive are visible on mobile without immediately repeating the same image.
+    if (actualCols <= 4 && safeItems.length > actualCols) {
+      const cols: DriftWallItem[][] = [];
+      const len = safeItems.length;
+      for (let c = 0; c < actualCols; c++) {
+        const offset = Math.floor((c * len) / actualCols);
+        const colList: DriftWallItem[] = [];
+        for (let i = 0; i < len; i++) {
+          colList.push(safeItems[(offset + i) % len]);
+        }
+        cols.push(colList);
+      }
+      return cols;
+    }
+
+    // Default desktop distribution (preserves exact PC behavior)
     const cols: DriftWallItem[][] = Array.from({ length: actualCols }, () => []);
     safeItems.forEach((item, i) => cols[i % actualCols].push(item));
     return cols;

@@ -40,6 +40,17 @@ export default function GalleryDriftWall({ initialWorks }: GalleryDriftWallProps
   const [items, setItems] = useState<DriftWallItem[]>(initialItems);
   const [selectedPhoto, setSelectedPhoto] = useState<DriftWallItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [windowWidth, setWindowWidth] = useState<number>(1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 640;
+  const isTablet = windowWidth >= 640 && windowWidth < 1024;
 
   useEffect(() => {
     let isMounted = true;
@@ -96,58 +107,58 @@ export default function GalleryDriftWall({ initialWorks }: GalleryDriftWallProps
 
   return (
     <>
-      <div className="relative w-full h-[720px] sm:h-[820px] md:h-[900px] lg:h-[960px] overflow-hidden bg-black select-none">
+      <div className="relative w-full h-[350px] sm:h-[480px] md:h-[720px] lg:h-[960px] overflow-hidden bg-black select-none">
         {/* Soft luminous ambient backlight */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.07),transparent_70%)] pointer-events-none z-[1]" />
 
         {/* --- 4-SIDE SOFT GENTLE BLEND GRADIENTS --- */}
         {/* Top edge soft fade */}
-        <div className="absolute top-0 inset-x-0 h-20 sm:h-28 bg-gradient-to-b from-black via-black/45 to-transparent pointer-events-none z-[5]" />
+        <div className="absolute top-0 inset-x-0 h-12 sm:h-20 md:h-28 bg-gradient-to-b from-black via-black/45 to-transparent pointer-events-none z-[5]" />
 
         {/* Bottom edge soft fade */}
-        <div className="absolute bottom-0 inset-x-0 h-20 sm:h-28 bg-gradient-to-t from-black via-black/45 to-transparent pointer-events-none z-[5]" />
+        <div className="absolute bottom-0 inset-x-0 h-12 sm:h-20 md:h-28 bg-gradient-to-t from-black via-black/45 to-transparent pointer-events-none z-[5]" />
 
         {/* Left edge gentle fade */}
-        <div className="absolute left-0 inset-y-0 w-14 sm:w-24 md:w-32 bg-gradient-to-r from-black/75 via-black/25 to-transparent pointer-events-none z-[5]" />
+        <div className="absolute left-0 inset-y-0 w-8 sm:w-16 md:w-32 bg-gradient-to-r from-black/75 via-black/25 to-transparent pointer-events-none z-[5]" />
 
         {/* Right edge gentle fade */}
-        <div className="absolute right-0 inset-y-0 w-14 sm:w-24 md:w-32 bg-gradient-to-l from-black/75 via-black/25 to-transparent pointer-events-none z-[5]" />
+        <div className="absolute right-0 inset-y-0 w-8 sm:w-16 md:w-32 bg-gradient-to-l from-black/75 via-black/25 to-transparent pointer-events-none z-[5]" />
 
         {/* --- SOFT CORNER SHADOWS --- */}
         {/* Top-Left Corner Shadow */}
-        <div className="absolute top-0 left-0 w-36 sm:w-56 h-36 sm:h-56 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
+        <div className="absolute top-0 left-0 w-24 sm:w-36 md:w-56 h-24 sm:h-36 md:h-56 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
 
         {/* Top-Right Corner Shadow */}
-        <div className="absolute top-0 right-0 w-36 sm:w-56 h-36 sm:h-56 bg-[radial-gradient(circle_at_top_right,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
+        <div className="absolute top-0 right-0 w-24 sm:w-36 md:w-56 h-24 sm:h-36 md:h-56 bg-[radial-gradient(circle_at_top_right,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
 
         {/* Bottom-Left Corner Shadow */}
-        <div className="absolute bottom-0 left-0 w-36 sm:w-56 h-36 sm:h-56 bg-[radial-gradient(circle_at_bottom_left,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
+        <div className="absolute bottom-0 left-0 w-24 sm:w-36 md:w-56 h-24 sm:h-36 md:h-56 bg-[radial-gradient(circle_at_bottom_left,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
 
         {/* Bottom-Right Corner Shadow */}
-        <div className="absolute bottom-0 right-0 w-36 sm:w-56 h-36 sm:h-56 bg-[radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
+        <div className="absolute bottom-0 right-0 w-24 sm:w-36 md:w-56 h-24 sm:h-36 md:h-56 bg-[radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.2)_50%,transparent_80%)] pointer-events-none z-[6]" />
 
         {/* Subtle perimeter vignette (keeps center completely bright and clear) */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_65%,rgba(0,0,0,0.18)_85%,rgba(0,0,0,0.45)_100%)] pointer-events-none z-[4]" />
 
         <DriftWall
           items={items}
-          columns={Math.min(6, Math.max(3, items.length))}
-          tileWidth={220}
-          tileHeight={145}
-          gap={20}
-          tilt={14}
-          turn={-12}
-          perspective={1300}
-          depth={130}
-          speed={38}
+          columns={isMobile ? 3 : isTablet ? 4 : Math.min(6, Math.max(3, items.length))}
+          tileWidth={isMobile ? 115 : isTablet ? 160 : 220}
+          tileHeight={isMobile ? 80 : isTablet ? 105 : 145}
+          gap={isMobile ? 10 : isTablet ? 14 : 20}
+          tilt={isMobile ? 9 : isTablet ? 12 : 14}
+          turn={isMobile ? -8 : isTablet ? -10 : -12}
+          perspective={isMobile ? 900 : isTablet ? 1100 : 1300}
+          depth={isMobile ? 65 : isTablet ? 95 : 130}
+          speed={isMobile ? 24 : isTablet ? 30 : 38}
           direction="up"
           variance={0.45}
-          parallax={0.65}
-          lift={70}
+          parallax={isMobile ? 0.35 : 0.65}
+          lift={isMobile ? 28 : 70}
           fade={0}
           dim={0.98}
           overlayColor="transparent"
-          radius={14}
+          radius={isMobile ? 10 : 14}
           roll={0}
           pauseOnHover={false}
           grayscale={false}

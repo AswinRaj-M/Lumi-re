@@ -11,9 +11,9 @@ export default function FeaturedShowcaseSection({ initialWorks }: FeaturedShowca
   return (
     <section
       id="featured-showcase"
-      className="relative w-full bg-black text-white px-6 sm:px-12 md:px-20 lg:px-32 py-24 sm:py-32 z-30 border-t border-neutral-900"
+      className="relative w-full bg-black text-white px-4 sm:px-12 md:px-20 lg:px-32 py-16 sm:py-24 md:py-32 z-30 border-t border-neutral-900"
     >
-      <div className="max-w-7xl mx-auto flex flex-col gap-12 sm:gap-16">
+      <div className="max-w-7xl mx-auto flex flex-col gap-10 sm:gap-16">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 max-w-4xl">
@@ -30,7 +30,7 @@ export default function FeaturedShowcaseSection({ initialWorks }: FeaturedShowca
             </h2>
 
             <p className="text-sm sm:text-base md:text-lg text-neutral-400 font-light leading-relaxed max-w-2xl">
-              Five decisive frames capturing uncompromising optical craft and cinematic depth. Hover or click to expand each study.
+              Five decisive frames capturing uncompromising optical craft and cinematic depth. Tap or hover to expand each study.
             </p>
           </div>
         </div>

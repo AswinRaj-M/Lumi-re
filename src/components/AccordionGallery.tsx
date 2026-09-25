@@ -108,7 +108,11 @@ const AccordionGallery = ({
         const bar = barRefs.current[i];
         const text = textRefs.current[i];
 
-        const rot = isActive ? 0 : i < active ? tilt : -tilt;
+        const currentTilt =
+          typeof window !== 'undefined' && window.innerWidth < 640
+            ? Math.min(tilt, 4)
+            : tilt;
+        const rot = isActive ? 0 : i < active ? currentTilt : -currentTilt;
         const rotProp = vertical ? { rotateX: -rot } : { rotateY: rot };
 
         tl.to(panel, { flexGrow: isActive ? grow : 1, ...rotProp, duration: dur, ease }, 0);
@@ -227,7 +231,7 @@ const AccordionGallery = ({
   return (
     <div
       ref={rootRef}
-      className={`flex ${vertical ? 'flex-col' : 'flex-row'} w-full max-w-full [perspective:1400px] max-[520px]:!flex-col max-[520px]:[perspective:none] ${className}`}
+      className={`flex ${vertical ? 'flex-col' : 'flex-row'} w-full max-w-full [perspective:1000px] md:[perspective:1400px] ${className}`}
       style={{ gap: `${gap}px`, height: vertical ? `${Math.round(height * 1.6)}px` : `${height}px` }}
       role="list"
       aria-label="Image accordion gallery"
@@ -242,7 +246,7 @@ const AccordionGallery = ({
             ref={(el: HTMLElement | null) => {
               panelRefs.current[i] = el;
             }}
-            className="group relative block min-w-0 min-h-0 flex-[1_1_0] cursor-pointer overflow-hidden bg-[#0a0713] no-underline outline-none [transform-style:preserve-3d] [transform-origin:center] [box-shadow:0_10px_30px_-18px_rgba(0,0,0,0.8)] focus-visible:[box-shadow:0_0_0_2px_var(--ag-accent),0_10px_30px_-18px_rgba(0,0,0,0.8)] max-[520px]:min-h-[84px] max-[520px]:!transform-none"
+            className="group relative block min-w-0 min-h-0 flex-[1_1_0] cursor-pointer overflow-hidden bg-[#0a0713] no-underline outline-none [transform-style:preserve-3d] [transform-origin:center] [box-shadow:0_10px_30px_-18px_rgba(0,0,0,0.8)] focus-visible:[box-shadow:0_0_0_2px_var(--ag-accent),0_10px_30px_-18px_rgba(0,0,0,0.8)]"
             style={
               {
                 borderRadius: `${radius}px`,
@@ -260,8 +264,8 @@ const AccordionGallery = ({
             aria-current={isActive ? 'true' : undefined}
             aria-label={item.label}
           >
-            {/* View Full-Screen Click Badge on Hover */}
-            <span className="pointer-events-none absolute top-4 right-4 z-[4] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            {/* View Full-Screen Click Badge on Hover (Desktop only) */}
+            <span className="pointer-events-none absolute top-4 right-4 z-[4] opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden md:block">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 border border-white/25 text-[10px] font-mono tracking-wider uppercase text-neutral-200 backdrop-blur-md shadow-xl">
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
@@ -297,14 +301,14 @@ const AccordionGallery = ({
             </span>
             {showLabels && (
               <span
-                className="pointer-events-none absolute bottom-5 left-5 right-5 z-[2] flex items-center gap-3"
+                className="pointer-events-none absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 z-[2] flex items-center gap-2 sm:gap-3"
                 aria-hidden="true"
               >
                 <span
                   ref={(el: HTMLElement | null) => {
                     barRefs.current[i] = el;
                   }}
-                  className="h-[26px] w-[3px] flex-none rounded-[3px] opacity-0"
+                  className="h-[18px] sm:h-[26px] w-[2.5px] sm:w-[3px] flex-none rounded-[3px] opacity-0"
                   style={{
                     background: accentColor,
                     boxShadow: `0 0 12px color-mix(in srgb, ${accentColor} 60%, transparent)`
@@ -314,7 +318,7 @@ const AccordionGallery = ({
                   ref={(el: HTMLElement | null) => {
                     textRefs.current[i] = el;
                   }}
-                  className="overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(1rem,1.4vw,1.4rem)] font-semibold tracking-[0.01em] opacity-0 [text-shadow:0_2px_14px_rgba(0,0,0,0.55)]"
+                  className="overflow-hidden text-ellipsis whitespace-nowrap text-xs sm:text-sm md:text-[clamp(1rem,1.4vw,1.4rem)] font-semibold tracking-[0.01em] opacity-0 [text-shadow:0_2px_14px_rgba(0,0,0,0.55)]"
                   style={{ color: textColor }}
                 >
                   {item.label}
