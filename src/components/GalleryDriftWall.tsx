@@ -10,7 +10,6 @@ const REAL_GALLERY_PHOTOS: DriftWallItem[] = [
   { image: "/uploads/works/1790259460853_music_icon.webp", title: "Music Icon" },
   { image: "/uploads/works/1790259460251_Hinokami_kagura.jpg", title: "Hinokami kagura" },
   { image: "/uploads/works/1790259460106_download.jpg", title: "Cinematic Core" },
-  { image: "/uploads/works/1790259459606_ChatGPT_Image_Sep_20__2026__03_21_03_PM.png", title: "ChatGPT Image" },
   { image: "/uploads/works/1790259459194_Aswin_.jpeg", title: "Aswin" },
   { image: "/uploads/works/1790259458501_Aegon_6_targarion.png", title: "Aegon 6 targarion" },
   { image: "/uploads/works/1790259356381_wp11822209.jpg", title: "Chassis Frame" },

@@ -66,17 +66,7 @@
     "createdAt": 1790259460198,
     "storageType": "local"
   },
-  {
-    "id": "work_1790259460030",
-    "title": "Work #3",
-    "category": "gallery",
-    "imageUrl": "/uploads/works/1790259459606_ChatGPT_Image_Sep_20__2026__03_21_03_PM.png",
-    "storagePath": "works/1790259459606_ChatGPT_Image_Sep_20__2026__03_21_03_PM.png",
-    "fileSize": 2074650,
-    "uploadedBy": "photoadmin@gmail.com",
-    "createdAt": 1790259460030,
-    "storageType": "local"
-  },
+
   {
     "id": "work_1790259459485",
     "title": "Work #2",
@@ -201,18 +191,6 @@
     "displayOrder": 2
   },
   {
-    "id": "work_1790258201376",
-    "title": "ChatGPT Image Sep 20, 2026, 03 21 03 PM",
-    "category": "featured",
-    "imageUrl": "/uploads/works/1790258199216_ChatGPT_Image_Sep_20__2026__03_21_03_PM.png",
-    "storagePath": "works/1790258199216_ChatGPT_Image_Sep_20__2026__03_21_03_PM.png",
-    "fileSize": 2074650,
-    "uploadedBy": "photoadmin@gmail.com",
-    "createdAt": 1790258201376,
-    "storageType": "local",
-    "displayOrder": 3
-  },
-  {
     "id": "work_1790258232232",
     "title": "BMW M4 CS",
     "category": "featured",
@@ -222,6 +200,6 @@
     "uploadedBy": "photoadmin@gmail.com",
     "createdAt": 1790258232232,
     "storageType": "local",
-    "displayOrder": 4
+    "displayOrder": 3
   }
 ]

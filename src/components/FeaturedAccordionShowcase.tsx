@@ -8,7 +8,6 @@ import { type WorkItem, isWorkDeleted } from "@/backend";
 const REAL_FEATURED_PHOTOS: AccordionGalleryItem[] = [
   { image: "/uploads/works/1790258171376_Aegon_6_targarion.png", label: "Aegon 6 targarion", link: "#", alt: "Aegon 6 targarion" },
   { image: "/uploads/works/1790258191655_Aswin_.jpeg", label: "Aswin", link: "#", alt: "Aswin" },
-  { image: "/uploads/works/1790258199216_ChatGPT_Image_Sep_20__2026__03_21_03_PM.png", label: "ChatGPT Image", link: "#", alt: "ChatGPT Image" },
   { image: "/uploads/works/1790258224614_Gemini_Generated_Image_huxzx4huxzx4huxz.png", label: "BMW M4 CS", link: "#", alt: "BMW M4 CS" },
   { image: "/uploads/works/1790258244951_Stark_man.jpg", label: "Stark man", link: "#", alt: "Stark man" },
 ];
