@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Anyone can read works for the public portfolio showcase & gallery
+    match /works/{workId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Default fallback rules
+    match /{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

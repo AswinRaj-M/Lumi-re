@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DriftWall, { DriftWallItem } from "./DriftWall";
 import PhotoLightboxModal from "./PhotoLightboxModal";
-import { type WorkItem } from "@/backend";
+import { type WorkItem, isWorkDeleted } from "@/backend";
 
 const REAL_GALLERY_PHOTOS: DriftWallItem[] = [
   { image: "/uploads/works/1790259461080_Stark_man.jpg", title: "Stark man" },
@@ -29,11 +29,13 @@ interface GalleryDriftWallProps {
 export default function GalleryDriftWall({ initialWorks }: GalleryDriftWallProps = {}) {
   const initialItems: DriftWallItem[] =
     initialWorks && initialWorks.length > 0
-      ? initialWorks.map((w) => ({
-          image: w.imageUrl,
-          title: w.title,
-        }))
-      : REAL_GALLERY_PHOTOS;
+      ? initialWorks
+          .filter((w) => !isWorkDeleted(w.id))
+          .map((w) => ({
+            image: w.imageUrl,
+            title: w.title,
+          }))
+      : REAL_GALLERY_PHOTOS.filter((p) => !isWorkDeleted(p.image));
 
   const [items, setItems] = useState<DriftWallItem[]>(initialItems);
   const [selectedPhoto, setSelectedPhoto] = useState<DriftWallItem | null>(null);
@@ -46,10 +48,12 @@ export default function GalleryDriftWall({ initialWorks }: GalleryDriftWallProps
       try {
         const res = await fetch("/api/works?category=gallery");
         const data = await res.json();
-        if (data.success && Array.isArray(data.works) && data.works.length > 0) {
-          const galleryWorks = data.works.filter((w: WorkItem) => w.category === "gallery");
+        if (data.success && Array.isArray(data.works)) {
+          const galleryWorks = data.works.filter(
+            (w: WorkItem) => w.category === "gallery" && !isWorkDeleted(w.id)
+          );
 
-          if (galleryWorks.length > 0 && isMounted) {
+          if (isMounted) {
             const mapped: DriftWallItem[] = galleryWorks.map((w: WorkItem) => ({
               image: w.imageUrl,
               title: w.title,

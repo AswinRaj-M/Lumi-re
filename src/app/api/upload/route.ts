@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { firebaseConfig } from "@/backend/config";
 import { checkRateLimit } from "@/server/rateLimiter";
 import { verifyAdminRequest, unauthorizedResponse } from "@/server/authGuard";
@@ -25,35 +26,89 @@ export interface StoredWork {
   displayOrder?: number;
 }
 
+function getTmpDeletedPath() {
+  return path.join(os.tmpdir(), "lumiere_deleted_works.json");
+}
+
+function getTmpWorksPath() {
+  return path.join(os.tmpdir(), "lumiere_works.json");
+}
+
+function loadDeletedIds(): Set<string> {
+  const ids = new Set<string>();
+  try {
+    const tmpPath = getTmpDeletedPath();
+    if (fs.existsSync(tmpPath)) {
+      const data = JSON.parse(fs.readFileSync(tmpPath, "utf-8"));
+      if (Array.isArray(data)) {
+        data.forEach((id: string) => ids.add(id));
+      }
+    }
+  } catch {}
+  return ids;
+}
+
 function getWorksFilePath() {
   return path.join(process.cwd(), "public", "uploads", "works.json");
 }
 
 function readLocalWorks(): StoredWork[] {
+  const deleted = loadDeletedIds();
+  const tmpPath = getTmpWorksPath();
+
+  let works: StoredWork[] = [];
   try {
-    const filePath = getWorksFilePath();
-    if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, "utf-8");
+    if (fs.existsSync(tmpPath)) {
+      const data = fs.readFileSync(tmpPath, "utf-8");
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) {
-        return parsed.map((item) => ({
-          ...item,
-          category: item.category === "featured" ? "featured" : "gallery",
-        }));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        works = parsed;
       }
     }
   } catch (e) {
-    console.error("Error reading local works.json:", e);
+    console.warn("Could not read from /tmp/works.json:", e);
   }
-  return [];
+
+  if (works.length === 0) {
+    try {
+      const filePath = getWorksFilePath();
+      if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, "utf-8");
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          works = parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Error reading local works.json:", e);
+    }
+  }
+
+  return works
+    .filter((item) => !deleted.has(item.id))
+    .map((item) => ({
+      ...item,
+      category: item.category === "featured" ? "featured" : "gallery",
+    }));
 }
 
 function saveLocalWork(item: StoredWork) {
   try {
     const list = readLocalWorks();
     const updated = [item, ...list.filter((w) => w.id !== item.id)];
-    const filePath = getWorksFilePath();
-    fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), "utf-8");
+    
+    try {
+      const filePath = getWorksFilePath();
+      fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), "utf-8");
+    } catch {
+      // Vercel read-only filesystem
+    }
+
+    try {
+      fs.writeFileSync(getTmpWorksPath(), JSON.stringify(updated, null, 2), "utf-8");
+    } catch (e) {
+      console.warn("Could not save to /tmp:", e);
+    }
   } catch (e) {
     console.error("Error saving to local works.json:", e);
   }
@@ -63,8 +118,20 @@ function updateLocalWork(id: string, updates: Partial<StoredWork>) {
   try {
     const list = readLocalWorks();
     const updated = list.map((w) => (w.id === id ? { ...w, ...updates } : w));
-    const filePath = getWorksFilePath();
-    fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), "utf-8");
+    
+    try {
+      const filePath = getWorksFilePath();
+      fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), "utf-8");
+    } catch {
+      // Vercel read-only filesystem
+    }
+
+    try {
+      fs.writeFileSync(getTmpWorksPath(), JSON.stringify(updated, null, 2), "utf-8");
+    } catch (e) {
+      console.warn("Could not save to /tmp:", e);
+    }
+
     return updated.find((w) => w.id === id);
   } catch (e) {
     console.error("Error updating local works.json:", e);

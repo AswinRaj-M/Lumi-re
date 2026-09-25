@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AccordionGallery, { AccordionGalleryItem } from "./AccordionGallery";
 import PhotoLightboxModal from "./PhotoLightboxModal";
-import { type WorkItem } from "@/backend";
+import { type WorkItem, isWorkDeleted } from "@/backend";
 
 const REAL_FEATURED_PHOTOS: AccordionGalleryItem[] = [
   { image: "/uploads/works/1790258171376_Aegon_6_targarion.png", label: "Aegon 6 targarion", link: "#", alt: "Aegon 6 targarion" },
@@ -26,13 +26,16 @@ export default function FeaturedAccordionShowcase({
 }: FeaturedAccordionShowcaseProps) {
   const initialItems: AccordionGalleryItem[] =
     initialWorks && initialWorks.length > 0
-      ? initialWorks.slice(0, 5).map((w) => ({
-          image: w.imageUrl,
-          label: w.title,
-          link: "#",
-          alt: w.title,
-        }))
-      : REAL_FEATURED_PHOTOS;
+      ? initialWorks
+          .filter((w) => !isWorkDeleted(w.id))
+          .slice(0, 5)
+          .map((w) => ({
+            image: w.imageUrl,
+            label: w.title,
+            link: "#",
+            alt: w.title,
+          }))
+      : REAL_FEATURED_PHOTOS.filter((p) => !isWorkDeleted(p.image));
 
   const [items, setItems] = useState<AccordionGalleryItem[]>(initialItems);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -46,14 +49,14 @@ export default function FeaturedAccordionShowcase({
       try {
         const res = await fetch("/api/works?category=featured");
         const data = await res.json();
-        if (data.success && Array.isArray(data.works) && data.works.length > 0) {
-          // Strictly sort by displayOrder (1..5)
+        if (data.success && Array.isArray(data.works)) {
+          // Strictly sort by displayOrder (1..5) and exclude deleted items
           const sorted = [...data.works]
-            .filter((w: WorkItem) => w.category === "featured")
+            .filter((w: WorkItem) => w.category === "featured" && !isWorkDeleted(w.id))
             .sort((a: WorkItem, b: WorkItem) => (a.displayOrder ?? 99) - (b.displayOrder ?? 99))
             .slice(0, 5);
 
-          if (sorted.length > 0 && isMounted) {
+          if (isMounted) {
             const mapped: AccordionGalleryItem[] = sorted.map((w: WorkItem) => ({
               image: w.imageUrl,
               label: w.title,

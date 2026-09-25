@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { checkRateLimit } from "@/server/rateLimiter";
 import { verifyAdminRequest, unauthorizedResponse } from "@/server/authGuard";
 import { validateId, sanitizeText, isSafeDirectoryPath } from "@/server/fileSecurity";
@@ -18,35 +19,99 @@ export interface StoredWork {
   displayOrder?: number;
 }
 
+// Server-side deleted ID tracking across ephemeral serverless invocations
+const serverDeletedIds = new Set<string>();
+
+function getTmpDeletedPath() {
+  return path.join(os.tmpdir(), "lumiere_deleted_works.json");
+}
+
+function getTmpWorksPath() {
+  return path.join(os.tmpdir(), "lumiere_works.json");
+}
+
+function loadDeletedIds(): Set<string> {
+  const ids = new Set<string>(serverDeletedIds);
+  try {
+    const tmpPath = getTmpDeletedPath();
+    if (fs.existsSync(tmpPath)) {
+      const data = JSON.parse(fs.readFileSync(tmpPath, "utf-8"));
+      if (Array.isArray(data)) {
+        data.forEach((id: string) => ids.add(id));
+      }
+    }
+  } catch {}
+  return ids;
+}
+
+export function persistDeletedId(id: string) {
+  serverDeletedIds.add(id);
+  try {
+    const tmpPath = getTmpDeletedPath();
+    const ids = Array.from(loadDeletedIds());
+    if (!ids.includes(id)) ids.push(id);
+    fs.writeFileSync(tmpPath, JSON.stringify(ids), "utf-8");
+  } catch {}
+}
+
 function getWorksFilePath() {
   return path.join(process.cwd(), "public", "uploads", "works.json");
 }
 
 function readLocalWorks(): StoredWork[] {
+  const deleted = loadDeletedIds();
+  const tmpPath = getTmpWorksPath();
+
+  let works: StoredWork[] = [];
   try {
-    const filePath = getWorksFilePath();
-    if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, "utf-8");
+    if (fs.existsSync(tmpPath)) {
+      const data = fs.readFileSync(tmpPath, "utf-8");
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) {
-        return parsed.map((item) => ({
-          ...item,
-          category: item.category === "featured" ? "featured" : "gallery",
-        }));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        works = parsed;
       }
     }
   } catch (e) {
-    console.error("Error reading works.json:", e);
+    console.warn("Could not read from /tmp/works.json:", e);
   }
-  return [];
+
+  if (works.length === 0) {
+    try {
+      const filePath = getWorksFilePath();
+      if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, "utf-8");
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          works = parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Error reading works.json:", e);
+    }
+  }
+
+  return works
+    .filter((item) => !deleted.has(item.id))
+    .map((item) => ({
+      ...item,
+      category: item.category === "featured" ? "featured" : "gallery",
+    }));
 }
 
 function writeLocalWorks(works: StoredWork[]) {
+  // 1. Try writing to public/uploads/works.json (local dev environment)
   try {
     const filePath = getWorksFilePath();
     fs.writeFileSync(filePath, JSON.stringify(works, null, 2), "utf-8");
+  } catch {
+    // Read-only filesystem in Vercel lambda container - expected
+  }
+
+  // 2. Always persist to /tmp for serverless environment persistence
+  try {
+    fs.writeFileSync(getTmpWorksPath(), JSON.stringify(works, null, 2), "utf-8");
   } catch (e) {
-    console.error("Error writing to works.json:", e);
+    console.warn("Could not write works to /tmp:", e);
   }
 }
 
@@ -154,6 +219,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "A valid Work ID is required" }, { status: 400 });
     }
 
+    // Persist deleted ID in memory and /tmp
+    persistDeletedId(id);
+
     const works = readLocalWorks();
     const itemToDelete = works.find((w) => w.id === id);
 
@@ -172,16 +240,16 @@ export async function DELETE(req: NextRequest) {
           }
         }
       }
-
-      let remaining = works.filter((w) => w.id !== id);
-
-      // If a featured photo was removed, re-sequence the remaining featured photos
-      if (itemToDelete.category === "featured") {
-        remaining = resequenceFeatured(remaining);
-      }
-
-      writeLocalWorks(remaining);
     }
+
+    let remaining = works.filter((w) => w.id !== id);
+
+    // If a featured photo was removed, re-sequence the remaining featured photos
+    if (itemToDelete?.category === "featured" || !itemToDelete) {
+      remaining = resequenceFeatured(remaining);
+    }
+
+    writeLocalWorks(remaining);
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
